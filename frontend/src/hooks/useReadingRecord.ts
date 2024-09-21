@@ -11,27 +11,25 @@ import {
   updateReadingRecord,
 } from '@/apis/readingRecordsApi';
 import { useAuth } from './useAuth';
-import { useSelector } from '@/store';
-import { useDispatch } from 'react-redux';
-import { setReadingRecords } from '@/store/readingRecord';
+import { useAtom } from 'jotai';
+import { displayableReadingRecords } from '@/jotai/readingRecord';
 
 export const useReadingRecord = () => {
-  const { isSignedIn } = useAuth();
+  const { isLoggedIn } = useAuth();
 
-  const readingRecords = useSelector((state) => state.readingRecord.readingRecords);
-  const dispatch = useDispatch();
+  const [readingRecords, setReadingRecords] = useAtom(displayableReadingRecords);
 
   const handleFetchReadingRecords = useCallback(async () => {
     const data = await fetchReadingRecords();
-    dispatch(setReadingRecords(data));
-  }, [dispatch]);
+    setReadingRecords(data);
+  }, [setReadingRecords]);
 
   const handleCreateReadingRecord = useCallback(
     async (inputReadingRecord: CreateReadingRecordDto) => {
       const res = await postCreateReadingRecord(inputReadingRecord);
-      dispatch(setReadingRecords([...readingRecords, res]));
+      setReadingRecords([...readingRecords, res]);
     },
-    [readingRecords, dispatch],
+    [readingRecords, setReadingRecords],
   );
 
   const handleUpdateReadingRecord = useCallback(
@@ -41,9 +39,9 @@ export const useReadingRecord = () => {
         readingRecord.id === Number(id) ? res : readingRecord,
       );
 
-      dispatch(setReadingRecords(newReadingRecords));
+      setReadingRecords(newReadingRecords);
     },
-    [readingRecords, dispatch],
+    [readingRecords, setReadingRecords],
   );
 
   const handleDeleteReadingRecord = useCallback(
@@ -53,14 +51,14 @@ export const useReadingRecord = () => {
       const newReadingRecords = readingRecords.filter(
         (readingRecord: ReadingRecordDto) => readingRecord.id !== Number(id),
       );
-      dispatch(setReadingRecords(newReadingRecords));
+      setReadingRecords(newReadingRecords);
     },
-    [readingRecords, dispatch],
+    [readingRecords, setReadingRecords],
   );
 
   useEffect(() => {
-    if (isSignedIn) handleFetchReadingRecords();
-  }, [isSignedIn, handleFetchReadingRecords]);
+    if (isLoggedIn) handleFetchReadingRecords();
+  }, [isLoggedIn, handleFetchReadingRecords]);
 
   return {
     readingRecords,
